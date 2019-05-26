@@ -8,7 +8,7 @@ import (
 const (
 	start  = "i"
 	end    = "n"
-	middle = 'a'
+	middle = "a"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 
 	starts = strings.HasPrefix(s, start)
 	ends = strings.HasSuffix(s, end)
-	contains = strings.ContainsRune(s, middle)
+	contains = strings.Contains(s, middle)
 
 	if starts && ends && contains {
 		fmt.Println("Found!")
