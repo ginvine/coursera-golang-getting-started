@@ -26,7 +26,7 @@ func Swap(arr []int, i int) {
 }
 
 func main() {
-	fmt.Println("enter numbers")
+	fmt.Println("enter numbers separated by space")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 
