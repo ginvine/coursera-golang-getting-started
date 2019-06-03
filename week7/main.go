@@ -46,28 +46,31 @@ func main() {
 	animals := getAnimals()
 	for {
 		fmt.Print("> ")
-		r := bufio.NewReader(os.Stdin)
-		b, err := r.ReadString('\n')
-		if err != nil {
-			fmt.Printf("incorrect input: %v\n", err)
-		}
-		inputs := strings.Split(string(b), " ")
+		s := bufio.NewScanner(os.Stdin)
+		s.Scan()
+		line := s.Text()
+
+		inputs := strings.Split(line, " ")
 		if len(inputs) != 2 {
 			fmt.Println("please enter exactly 2 words")
+			break
 		}
+
 		animal, ok := animals[inputs[0]]
 		if !ok {
 			fmt.Printf("can't find %s animal\n", inputs[0])
+			break
 		}
+
 		switch inputs[1] {
-		case "eat\n":
+		case "eat":
 			animal.Eat()
-		case "move\n":
+		case "move":
 			animal.Move()
-		case "speak\n":
+		case "speak":
 			animal.Speak()
 		default:
-			fmt.Println("unrecognized information request")
+			fmt.Println("type eat, speak or move")
 		}
 	}
 }
