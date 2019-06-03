@@ -53,13 +53,13 @@ func main() {
 		inputs := strings.Split(line, " ")
 		if len(inputs) != 2 {
 			fmt.Println("please enter exactly 2 words")
-			break
+			continue
 		}
 
 		animal, ok := animals[inputs[0]]
 		if !ok {
 			fmt.Printf("can't find %s animal\n", inputs[0])
-			break
+			continue
 		}
 
 		switch inputs[1] {
