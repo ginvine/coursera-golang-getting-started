@@ -24,15 +24,14 @@ func (p Philo) eat() {
 		p.leftCS.Lock()
 		p.rightCS.Lock()
 
-		fmt.Println("eating")
+		fmt.Printf("starting to eat %d\n", p.number+1)
+		fmt.Printf("finishing eating %d\n", p.number+1)
 
 		p.rightCS.Unlock()
 		p.leftCS.Unlock()
 
 		p.done <- p.number
 	}
-
-	fmt.Printf("finishing eating %d\n", p.number+1)
 
 	p.wg.Done()
 }
