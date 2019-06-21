@@ -13,7 +13,10 @@ func ExecutePipeline(jobs ...job) {
 	in := make(chan interface{})
 	out := make(chan interface{})
 	for _, j := range jobs {
-		go j(in, out)
+		go func() {
+			j(in, out)
+			close(out)
+		}()
 		in = out
 		out = make(chan interface{})
 	}
