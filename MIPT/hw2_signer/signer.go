@@ -11,34 +11,40 @@ type job func(in, out chan interface{})
 
 func ExecutePipeline(jobs ...job) {
 	in := make(chan interface{})
-	out := make(chan interface{})
 	for _, j := range jobs {
-		go func() {
+		out := make(chan interface{})
+		go func(j job, in, out chan interface{}) {
 			j(in, out)
 			close(out)
-		}()
+		}(j, in, out)
 		in = out
-		out = make(chan interface{})
+	}
+	for range in {
 	}
 }
 
 func main() {
 	jobs := []job{
-		func(in, out chan interface{}) {
+		job(func(in, out chan interface{}) {
+			fmt.Println("sending to chan")
 			out <- 1
-		},
-		func(in, out chan interface{}) {
-			data := <-in
-			fmt.Println(data)
-		},
+			fmt.Println("sent to chan")
+		}),
+		job(func(in, out chan interface{}) {
+			fmt.Println("start reading from input chan")
+			for data := range in {
+				fmt.Println(data)
+			}
+			fmt.Println("stop reading from input chan")
+		}),
 	}
 	ExecutePipeline(jobs...)
-	fmt.Scanln()
+	//fmt.Scanln()
 }
 
 func SingleHash(in, out chan interface{}) {
 	for input := range in {
-		data := input.(string)
+		data := strconv.Itoa(input.(int))
 		out <- DataSignerCrc32(data) + "~" + DataSignerCrc32(DataSignerMd5(data))
 	}
 
