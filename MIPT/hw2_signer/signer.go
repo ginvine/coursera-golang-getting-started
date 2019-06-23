@@ -108,6 +108,7 @@ func MultiHash(in, out chan interface{}) {
 			wg.Done()
 		}(data, out, wg)
 	}
+	wg.Wait()
 }
 
 func CombineResults(in, out chan interface{}) {
