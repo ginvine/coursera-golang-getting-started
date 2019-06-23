@@ -5,7 +5,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
+
+var mu sync.Mutex
 
 type job func(in, out chan interface{})
 
@@ -42,21 +45,68 @@ func main() {
 	//fmt.Scanln()
 }
 
+func signCrc32(data string, out chan string) {
+	out <- DataSignerCrc32(data)
+}
+
+func signMd5(data string, out chan string, mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
+	out <- DataSignerMd5(data)
+}
+
 func SingleHash(in, out chan interface{}) {
+	wg := new(sync.WaitGroup)
 	for input := range in {
 		data := strconv.Itoa(input.(int))
-		out <- DataSignerCrc32(data) + "~" + DataSignerCrc32(DataSignerMd5(data))
+		wg.Add(1)
+		go func(data string, out chan interface{}, wg *sync.WaitGroup) {
+			var r1, r2 string
+			ch1 := make(chan string)
+			ch2 := make(chan string)
+			go signCrc32(data, ch1)
+			go signMd5(data, ch2, &mu)
+			for i := 0; i < 2; i++ {
+				select {
+				case r1 = <-ch1:
+				case r2 = <-ch2:
+					go signCrc32(r2, ch2)
+				}
+			}
+			r2 = <-ch2
+			out <- r1 + "~" + r2
+			wg.Done()
+		}(data, out, wg)
 	}
+	wg.Wait()
+}
 
+type res struct {
+	i int
+	s string
 }
 
 func MultiHash(in, out chan interface{}) {
+	wg := new(sync.WaitGroup)
 	for input := range in {
 		data := input.(string)
-		result := ""
-		for i := 0; i < 6; i++ {
-			result = result + DataSignerCrc32(strconv.Itoa(i)+data)
-		}
+		wg.Add(1)
+		go func(data string, out chan interface{}, wg *sync.WaitGroup) {
+			ch := make(chan res)
+			for i := 0; i < 6; i++ {
+				go func(i int, data string, ch chan res) {
+					r := DataSignerCrc32(strconv.Itoa(i) + data)
+					ch <- res{i, r}
+				}(i, data, ch)
+			}
+			s := make([]string, 6)
+			for i := 0; i < 6; i++ {
+				r := <-ch
+				s[r.i] = r.s
+			}
+			out <- strings.Join(s, "")
+			wg.Done()
+		}(data, out, wg)
 	}
 }
 
