@@ -36,15 +36,10 @@ func main() {
 	fmt.Println("Sorting", arr)
 	wg := sync.WaitGroup{}
 	wg.Add(4)
-	a := 0
-	inc := len(arr) / 4
-	b := inc
-	for i := 0; i < 3; i++ {
-		go sortArr(arr[a:b], &wg)
-		a = b
-		b += inc
+	l := len(arr)
+	for i := 0; i < 4; i++ {
+		go sortArr(arr[l*i/4:l*(i+1)/4], &wg)
 	}
-	go sortArr(arr[a:], &wg)
 	wg.Wait()
 	sort.Ints(arr)
 	fmt.Println(arr)
